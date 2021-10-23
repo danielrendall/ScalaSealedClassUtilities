@@ -61,16 +61,13 @@ object SealedClassUtilities {
   private def enumerateAllSubclasses[T](classSymbol: ru.ClassSymbol): Set[T] = {
     // Given a sealed thing, we can get all known subclasses which must all be in the same file, though conceivably
     // some may be inside objects
+    checkSealed(classSymbol)
     classSymbol.knownDirectSubclasses.flatMap { clazz: ru.Symbol =>
       val classSymbol: ru.ClassSymbol = clazz.asClass
 
       if (classSymbol.isTrait) {
-        if (classSymbol.isSealed) {
-          enumerateAllSubclasses(classSymbol)
-        } else {
-          Set.empty
-        }
-      }else {
+        enumerateAllSubclasses(classSymbol)
+      } else {
         val fullyQualifiedName = getFullyQualifiedName(classSymbol)
         val classInstance = Class.forName(fullyQualifiedName)
         // This is how we get the companion object, which is what we really want...
@@ -79,6 +76,11 @@ object SealedClassUtilities {
       }
     }
   }
+
+  private def checkSealed(symbol: ru.ClassSymbol): Unit =
+    if (!symbol.isSealed) {
+      throw NotSealedException(symbol)
+    }
 
   case class NotSealedException(classSymbol: ru.ClassSymbol)
     extends ReflectiveOperationException("Can't enumerate non-sealed class: " + classSymbol.toString)
