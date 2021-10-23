@@ -52,8 +52,51 @@ class SealedClassUtilitiesSpec extends Specification {
           "sixth_foxtrot" -> ComplexSealedTraitSixth,
           "seventh_golf" -> ComplexSealedTraitSeventh,
           "eighth_hotel" -> ComplexSealedTraitEighth)
+    }
+  }
 
+  "With NestedTrait" should {
+    "Enumerate case objects of NestedTrait" in {
+      SealedClassUtilities.enumerateCaseObjects[NestedTrait] must_===
+        Set(DoNothing,
+          Vague.DoSomething,
+          Vague.DoSomethingElse,
+          DoSomethingHelpful,
+          GoodIdeas.DoSomethingHelpful,
+          GoodIdeas.DoSomethingKind,
+          GoodIdeas.DoSomethingWonderful,
+          GoodIdeas.DoSomethingWonderful.DoSomethingSuperWonderful,
+          DoSomethingEvil,
+          BadIdeas.DoSomethingUnpleasant,
+          BadIdeas.DoSomethingUnkind,
+          BadIdeas.DoSomethingTerrible,
+          BadIdeas.DoSomethingTerrible.DoSomethingSuperTerrible)
+    }
 
+    "Enumerate case objects of GoodIdeas" in {
+      SealedClassUtilities.enumerateCaseObjects[GoodIdeas] must_===
+        Set(DoSomethingHelpful,
+          GoodIdeas.DoSomethingHelpful,
+          GoodIdeas.DoSomethingKind,
+          GoodIdeas.DoSomethingWonderful,
+          GoodIdeas.DoSomethingWonderful.DoSomethingSuperWonderful)
+    }
+
+    "Enumerate case objects of BadIdeas" in {
+      SealedClassUtilities.enumerateCaseObjects[BadIdeas] must_===
+        Set(DoSomethingEvil,
+          BadIdeas.DoSomethingUnpleasant,
+          BadIdeas.DoSomethingUnkind,
+          BadIdeas.DoSomethingTerrible,
+          BadIdeas.DoSomethingTerrible.DoSomethingSuperTerrible)
+    }
+
+    "Enumerate case objects of Vague.Something" in {
+      SealedClassUtilities.enumerateCaseObjects[Vague.Something] must_===
+        Set(Vague.DoSomething,
+          Vague.DoSomethingElse,
+          GoodIdeas.DoSomethingHelpful,
+          BadIdeas.DoSomethingUnpleasant)
     }
   }
 
