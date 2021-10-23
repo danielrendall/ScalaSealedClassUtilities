@@ -1,5 +1,6 @@
 package uk.co.danielrendall.scala.utilities
 
+import org.specs2.matcher.Matcher
 import org.specs2.mutable.Specification
 import uk.co.danielrendall.scala.utilities.ComplexSealedTrait.{ComplexSealedTraitSecond, ComplexSealedTraitThird}
 import uk.co.danielrendall.scala.utilities.ComplexSealedTraitSixth.ComplexSealedTraitSeventh
@@ -7,6 +8,10 @@ import uk.co.danielrendall.scala.utilities.ComplexSealedTraitSixth.ComplexSealed
 import uk.co.danielrendall.scala.utilities.SealedClassUtilities.NotSealedException
 import uk.co.danielrendall.scala.utilities.UnrelatedNotEvenCompanion.ComplexSealedTraitFourth
 import uk.co.danielrendall.scala.utilities.UnrelatedNotEvenCompanion.ComplexSealedTraitFourth.ComplexSealedTraitFifth
+
+import java.util.concurrent.{Executors, TimeUnit}
+import scala.concurrent.duration.Duration
+import scala.concurrent.{Await, ExecutionContext, ExecutionContextExecutor, Future}
 
 class SealedTraitClassUtilitiesSpec extends Specification {
 
@@ -111,6 +116,33 @@ class SealedTraitClassUtilitiesSpec extends Specification {
     "Throw exception" in {
       SealedClassUtilities.enumerateCaseObjects[SealedTrait] must
         throwA[NotSealedException]("Can't enumerate non-sealed class: trait UnsealedChildTrait")
+    }
+  }
+
+  "Getting the answer from multiple threads" should {
+    "Return the same object to each thread" in {
+      val service = Executors.newFixedThreadPool(8)
+      try {
+        implicit val ec: ExecutionContextExecutor = ExecutionContext.fromExecutor(service)
+
+        val futures: Seq[Future[(Int, Set[NestedTrait])]] = (0 until 1000).map { id =>
+          Future{
+            (id, SealedClassUtilities.enumerateCaseObjects[NestedTrait])
+          }
+        }
+
+        Await.result(Future.sequence(futures), Duration(10, TimeUnit.SECONDS)).toList match {
+          case Nil => throw new Exception("Should have had some futures!")
+          case head :: tail =>
+            val headSet = head._2
+            // IntelliJ complains about the next line
+            tail.map(_._2) must contain(allOf(beEqualTo(headSet)))
+        }
+
+      } finally {
+        service.shutdown()
+      }
+
     }
   }
 }
