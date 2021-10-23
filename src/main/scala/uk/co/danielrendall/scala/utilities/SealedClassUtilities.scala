@@ -17,16 +17,7 @@ object SealedClassUtilities {
    * @return
    */
   def enumerateCaseObjects[T](implicit ct: ClassTag[T], man: Manifest[T]): Set[T] = {
-    // Given a sealed thing, we can get all known subclasses which must all be in the same file, though conceivably
-    // some may be inside objects
-    ru.typeOf[T].typeSymbol.asClass.knownDirectSubclasses.map { clazz: ru.Symbol =>
-      val classSymbol: ru.ClassSymbol = clazz.asClass
-      val fullyQualifiedName = getFullyQualifiedName(classSymbol)
-      val classInstance = Class.forName(fullyQualifiedName)
-      // This is how we get the companion object, which is what we really want...
-      val instance = classInstance.getField("MODULE$").get(classInstance).asInstanceOf[T]
-      instance
-    }
+    enumerateAllSubclasses(ru.typeOf[T].typeSymbol.asClass)
   }
 
   /**
@@ -50,6 +41,9 @@ object SealedClassUtilities {
       if (!aSymbol.isPackage && foundPackage) {
         accum.mkString
       } else {
+        if (symbol.name.toString == "") {
+          println("Bad name: " + symbol)
+        }
         val newAccum =
           if (aSymbol.name.toString != "<root>") {
             if (aSymbol.isModuleClass && !aSymbol.isPackage)
@@ -64,4 +58,25 @@ object SealedClassUtilities {
     recurse(symbol, false, List.empty)
   }
 
+  private def enumerateAllSubclasses[T](classSymbol: ru.ClassSymbol): Set[T] = {
+    // Given a sealed thing, we can get all known subclasses which must all be in the same file, though conceivably
+    // some may be inside objects
+    classSymbol.knownDirectSubclasses.flatMap { clazz: ru.Symbol =>
+      val classSymbol: ru.ClassSymbol = clazz.asClass
+
+      if (classSymbol.isTrait) {
+        if (classSymbol.isSealed) {
+          enumerateAllSubclasses(classSymbol)
+        } else {
+          Set.empty
+        }
+      }else {
+        val fullyQualifiedName = getFullyQualifiedName(classSymbol)
+        val classInstance = Class.forName(fullyQualifiedName)
+        // This is how we get the companion object, which is what we really want...
+        val instance = classInstance.getField("MODULE$").get(classInstance).asInstanceOf[T]
+        Set(instance)
+      }
+    }
+  }
 }
