@@ -4,10 +4,11 @@ import org.specs2.mutable.Specification
 import uk.co.danielrendall.scala.utilities.ComplexSealedTrait.{ComplexSealedTraitSecond, ComplexSealedTraitThird}
 import uk.co.danielrendall.scala.utilities.ComplexSealedTraitSixth.ComplexSealedTraitSeventh
 import uk.co.danielrendall.scala.utilities.ComplexSealedTraitSixth.ComplexSealedTraitSeventh.ComplexSealedTraitEighth
+import uk.co.danielrendall.scala.utilities.SealedClassUtilities.NotSealedException
 import uk.co.danielrendall.scala.utilities.UnrelatedNotEvenCompanion.ComplexSealedTraitFourth
 import uk.co.danielrendall.scala.utilities.UnrelatedNotEvenCompanion.ComplexSealedTraitFourth.ComplexSealedTraitFifth
 
-class SealedClassUtilitiesSpec extends Specification {
+class SealedTraitClassUtilitiesSpec extends Specification {
 
   "With SimpleSealedTrait" should {
     "Enumerate case objects" in {
@@ -100,4 +101,16 @@ class SealedClassUtilitiesSpec extends Specification {
     }
   }
 
+  "With UnsealedTrait" should {
+    "Throw exception" in {
+      SealedClassUtilities.enumerateCaseObjects[UnsealedTrait] must
+        throwA[NotSealedException]("Can't enumerate non-sealed class: trait UnsealedTrait")
+    }
+  }
+  "With SealedTrait" should {
+    "Throw exception" in {
+      SealedClassUtilities.enumerateCaseObjects[SealedTrait] must
+        throwA[NotSealedException]("Can't enumerate non-sealed class: trait UnsealedChildTrait")
+    }
+  }
 }

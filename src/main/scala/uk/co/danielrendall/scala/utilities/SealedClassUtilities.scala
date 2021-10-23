@@ -79,4 +79,7 @@ object SealedClassUtilities {
       }
     }
   }
+
+  case class NotSealedException(classSymbol: ru.ClassSymbol)
+    extends ReflectiveOperationException("Can't enumerate non-sealed class: " + classSymbol.toString)
 }
