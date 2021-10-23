@@ -31,7 +31,8 @@ object SealedClassUtilities {
    * @tparam T A sealed trait or class
    * @return
    */
-  def indexCaseObjects[T](fn: T => String = (s: T) => s.toString)(implicit ct: ClassTag[T], man: Manifest[T]): Map[String, T] =
+  def indexCaseObjects[T](fn: T => String = (s: T) => s.toString)
+                         (implicit ct: ClassTag[T], man: Manifest[T]): Map[String, T] =
     enumerateCaseObjects[T].map(t => fn(t) -> t).toMap
 
   private def getFullyQualifiedName(symbol: ru.Symbol): String = {
@@ -58,7 +59,8 @@ object SealedClassUtilities {
     recurse(symbol, false, List.empty)
   }
 
-  private def enumerateAllSubclasses[T](classSymbol: ru.ClassSymbol): Set[T] = {
+  private def enumerateAllSubclasses[T](classSymbol: ru.ClassSymbol)
+                                       (implicit ct: ClassTag[T], man: Manifest[T]): Set[T] = {
     // Given a sealed thing, we can get all known subclasses which must all be in the same file, though conceivably
     // some may be inside objects
     checkSealed(classSymbol)
