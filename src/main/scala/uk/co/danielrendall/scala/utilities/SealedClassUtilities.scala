@@ -1,11 +1,14 @@
 package uk.co.danielrendall.scala.utilities
 
 import scala.annotation.tailrec
+import scala.collection.mutable
 import scala.reflect.ClassTag
 import scala.reflect.runtime.{universe => ru}
 
 
 object SealedClassUtilities {
+
+  private val enumerations = new mutable.HashMap[ClassTag[_], Set[_]]()
 
   /**
    * Given a sealed trait or class intended as an enumeration (with a bunch of case objects that inherit from it),
@@ -17,7 +20,13 @@ object SealedClassUtilities {
    * @return
    */
   def enumerateCaseObjects[T](implicit ct: ClassTag[T], man: Manifest[T]): Set[T] = {
-    enumerateAllSubclasses(ru.typeOf[T].typeSymbol.asClass)
+    enumerations.get(ct) match {
+      case Some(x) => x.asInstanceOf[Set[T]]
+      case None =>
+        enumerations.synchronized {
+          enumerations.getOrElseUpdate(ct, enumerateAllSubclasses(ru.typeOf[T].typeSymbol.asClass)).asInstanceOf[Set[T]]
+        }
+    }
   }
 
   /**
