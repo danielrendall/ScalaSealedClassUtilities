@@ -24,7 +24,7 @@ object SealedClassUtilities {
       case Some(x) => x.asInstanceOf[Set[T]]
       case None =>
         enumerations.synchronized {
-          enumerations.getOrElseUpdate(ct, enumerateAllSubclasses(ru.typeOf[T].typeSymbol.asClass)).asInstanceOf[Set[T]]
+          enumerations.getOrElseUpdate(ct, enumerateAllSubclasses(ru.typeOf[T].typeSymbol.asClass, ct.runtimeClass.getClassLoader)).asInstanceOf[Set[T]]
         }
     }
   }
@@ -68,7 +68,8 @@ object SealedClassUtilities {
     recurse(symbol, false, List.empty)
   }
 
-  private def enumerateAllSubclasses[T](classSymbol: ru.ClassSymbol)
+  private def enumerateAllSubclasses[T](classSymbol: ru.ClassSymbol,
+                                        classLoader: ClassLoader)
                                        (implicit ct: ClassTag[T], man: Manifest[T]): Set[T] = {
     // Given a sealed thing, we can get all known subclasses which must all be in the same file, though conceivably
     // some may be inside objects
@@ -77,10 +78,10 @@ object SealedClassUtilities {
       val classSymbol: ru.ClassSymbol = clazz.asClass
 
       if (classSymbol.isTrait) {
-        enumerateAllSubclasses(classSymbol)
+        enumerateAllSubclasses(classSymbol, classLoader)
       } else {
         val fullyQualifiedName = getFullyQualifiedName(classSymbol)
-        val classInstance = Class.forName(fullyQualifiedName)
+        val classInstance = Class.forName(fullyQualifiedName, true, classLoader)
         // This is how we get the companion object, which is what we really want...
         val instance = classInstance.getField("MODULE$").get(classInstance).asInstanceOf[T]
         Set(instance)

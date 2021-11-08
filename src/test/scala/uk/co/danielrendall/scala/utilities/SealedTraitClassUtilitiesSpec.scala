@@ -1,6 +1,5 @@
 package uk.co.danielrendall.scala.utilities
 
-import org.specs2.matcher.Matcher
 import org.specs2.mutable.Specification
 import uk.co.danielrendall.scala.utilities.ComplexSealedTrait.{ComplexSealedTraitSecond, ComplexSealedTraitThird}
 import uk.co.danielrendall.scala.utilities.ComplexSealedTraitSixth.ComplexSealedTraitSeventh
