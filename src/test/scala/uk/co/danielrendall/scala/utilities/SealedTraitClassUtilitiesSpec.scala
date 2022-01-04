@@ -111,12 +111,22 @@ class SealedTraitClassUtilitiesSpec extends Specification {
         throwA[NotSealedException]("Can't enumerate non-sealed class: trait UnsealedTrait")
     }
   }
+
   "With SealedTrait" should {
     "Throw exception" in {
       SealedClassUtilities.enumerateCaseObjects[SealedTrait] must
         throwA[NotSealedException]("Can't enumerate non-sealed class: trait UnsealedChildTrait")
     }
   }
+
+  "With SealedTraitWithCaseClasses" should {
+    "Enumerate the case objects only" in {
+      SealedClassUtilities.enumerateCaseObjects[SealedTraitWithCaseClasses] must_===
+        Set(SealedTraitWithCaseClassesFirst,
+          SealedTraitWithCaseClassesThird)
+    }
+  }
+
 
   "Getting the answer from multiple threads" should {
     "Return the same object to each thread" in {

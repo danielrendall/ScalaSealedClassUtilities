@@ -81,10 +81,16 @@ object SealedClassUtilities {
         enumerateAllSubclasses(classSymbol, classLoader)
       } else {
         val fullyQualifiedName = getFullyQualifiedName(classSymbol)
-        val classInstance = Class.forName(fullyQualifiedName, true, classLoader)
-        // This is how we get the companion object, which is what we really want...
-        val instance = classInstance.getField("MODULE$").get(classInstance).asInstanceOf[T]
-        Set(instance)
+        try {
+          val classInstance = Class.forName(fullyQualifiedName, true, classLoader)
+          // This is how we get the companion object, which is what we really want...
+          val instance = classInstance.getField("MODULE$").get(classInstance).asInstanceOf[T]
+          Set(instance)
+        } catch {
+          case _: ClassNotFoundException =>
+            // This can happen if there's a case class among the case objects. For now, we will just ignore this.
+            Set.empty
+        }
       }
     }
   }
@@ -97,3 +103,5 @@ object SealedClassUtilities {
   case class NotSealedException(classSymbol: ru.ClassSymbol)
     extends ReflectiveOperationException("Can't enumerate non-sealed class: " + classSymbol.toString)
 }
+
+case class DanielTestClass(s: String)

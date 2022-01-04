@@ -1,0 +1,11 @@
+package uk.co.danielrendall.scala.utilities
+
+sealed trait SealedTraitWithCaseClasses
+
+case object SealedTraitWithCaseClassesFirst extends SealedTraitWithCaseClasses
+
+case class SealedTraitWithCaseClassesSecond(s: String) extends SealedTraitWithCaseClasses
+
+case object SealedTraitWithCaseClassesThird extends SealedTraitWithCaseClasses
+
+case class SealedTraitWithCaseClassesFourth(i: Int) extends SealedTraitWithCaseClasses
