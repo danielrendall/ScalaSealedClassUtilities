@@ -77,7 +77,7 @@ object SealedClassUtilities {
     classSymbol.knownDirectSubclasses.flatMap { clazz: ru.Symbol =>
       val classSymbol: ru.ClassSymbol = clazz.asClass
 
-      if (classSymbol.isTrait) {
+      (if (classSymbol.isTrait) {
         enumerateAllSubclasses(classSymbol, classLoader)
       } else {
         val fullyQualifiedName = getFullyQualifiedName(classSymbol)
@@ -91,7 +91,7 @@ object SealedClassUtilities {
             // This can happen if there's a case class among the case objects. For now, we will just ignore this.
             Set.empty
         }
-      }
+      }).asInstanceOf[Set[T]]
     }
   }
 
